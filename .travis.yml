@@ -1,5 +1,13 @@
 sudo: false
 language: ruby
 rvm:
-  - 2.4.1
+- 2.4.1
 before_install: gem install bundler -v 1.15.4
+deploy:
+  provider: rubygems
+  api_key:
+    secure: IYdqemmil/v75Qe5/e84WR1giyKmL7YDsK2LavLo6EFKgf1+9CuczAmpQx3pbHLZ7iUZiUYjvmefLbQUMSR9b4piGeUe1givhHNoGqf+0b2WLnZBY7t0p2a8kO8AtkseSOskj4oqGoF0dKmKtTM+q7fzk+w9xsdFw/cYwyg9Pm/6p8sGwJRIw8bMcWvavAZx4EFKx54cXIoHbn98gWDXqH4UqlBuvVwmseHQ6aJuiLm6qS9IhgXtzBO+Pjv9plVJBQV77qul46x+wsowDsQoMWjwWMHhbhDycygPZNX5v67Z4BqZmSrntzAEN4/d8AptMCcM4jw8C8o0HyewWH2UZhV10p7/23+lNkPBA3mBVXQg3k+ff6/1KG2GrECFd/uKx6YiHhn1jCCnlxSfph1a9NZ5opSeW9yTtZhQn6T7x20XWv8L+2K+zlVN/gWNovBnyT3EgCYmataoISv3iwgTGtWypitl/SSJeZKBZROaeAaW3xTYglxrK0vDCz15g/VrDtsZltFYs16D6uaa2Prcv/TCvcKpfiOAsZwG5kVqVk8/8Tt+GP9JPvQ9lRn9o9186m6l+o9PKLmOOLjzKucRq+IfDYAQ5mFql8wGO7bR5Rsm/xUfdDH+RGefoL0KmrfmmLRXq4I8ACKOzsjil5uLhAVc5r819JJ2knuLa9R46co=
+  gem: flight-router
+  on:
+    tags: true
+    repo: getto-systems/flight-router
