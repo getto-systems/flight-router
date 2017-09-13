@@ -1,5 +1,8 @@
 # flight-router
 
+[![Build Status](https://travis-ci.org/getto-systems/flight-router.svg?branch=master)](https://travis-ci.org/getto-systems/flight-router)
+[![Gem Version](https://badge.fury.io/rb/flight-router.svg)](https://badge.fury.io/rb/flight-router)
+
 router script for flight
 
 ## Installation
