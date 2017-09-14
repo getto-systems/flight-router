@@ -1,3 +1,5 @@
+require "yaml"
+
 module Flight::Router
   class Map < MapBase
     module Builder
@@ -22,16 +24,25 @@ module Flight::Router
       end
     end
 
-    def initialize(env)
-      @env = env.to_sym
+    def initialize(env:,input_dir:)
+      @env = env
+      @input_dir = input_dir
       @builder = Builder.builder
     end
 
     def env(**opts)
-      unless opts.has_key?(@env)
-        raise "env not defined: [#{@env}]"
+      if opts.empty?
+        @env
+      else
+        unless opts.has_key?(@env)
+          raise "env not defined: [#{@env}]"
+        end
+        opts[@env]
       end
-      opts[@env]
+    end
+
+    def load_yaml(file)
+      YAML.load_file File.join(@input_dir,file)
     end
 
     private

@@ -2,10 +2,10 @@ require "json"
 
 module Flight::Router
   class Drawer
-    def initialize(opts)
-      @output_dir = opts[:output_dir]
-      @output_file = opts[:output_file]
-      @map = Map.new(opts[:env])
+    def initialize(project:,output_dir:,input_dir:,env:)
+      @project = project
+      @output_dir = output_dir
+      @map = Map.new(env: env.to_sym, input_dir: File.join(input_dir,project))
       @app = App.new(@map)
     end
 
@@ -16,15 +16,13 @@ module Flight::Router
       @app.instance_exec(&block)
     end
 
-    def draw(path,&block)
+    def draw(&block)
       dir = File.join(@output_dir,path)
       FileUtils.mkdir_p(dir)
       File.write File.join(dir,"routes.json"), JSON.generate(build(path,&block))
     end
-    def build(path,&block)
-      if path == "/"
-        path == ""
-      end
+    def build(&block)
+      path = File.join("/", @project)
       container = Container.new([path], app: @app.config, map: @map.map, output_dir: @output_dir)
       container.instance_exec(&block)
       container.config

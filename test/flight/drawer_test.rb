@@ -2,33 +2,16 @@ require "test_helper"
 
 class Flight::DrawerTest < Minitest::Test
   def test_draw
-    credential = {
-      "gcp" => {
-        "GCP_CREDENTIALS_JSON" => '"JSON"',
-      },
-      "smtp" => {
-        "SMTP_SERVER" => "SMTP-SERVER",
-        "SMTP_PORT" => "SMTP-PORT",
-        "SMTP_USER" => "SMTP-USER",
-        "SMTP_PASSWORD" => "SMTP-PASSWORD",
-      },
-    }
-    contents = {
-      "reset-email" => {
-        "EMAIL_FROM" => "EMAIL-FROM",
-        "EMAIL_SUBJECT" => "EMAIL-SUBJECT",
-        "EMAIL_BODY" => <<EMAIL_BODY
-EMAIL
-BODY
-EMAIL_BODY
-      },
-    }
-
     router = Flight::Router::Drawer.new(
+      project: "getto/habit",
       env: "development",
       output_dir: File.expand_path("../routes",__FILE__),
+      input_dir: File.expand_path("../projects",__FILE__),
     )
     router.map do
+      set :credentials, load_yaml("credentials/#{env}.yml")
+      set :contents, load_yaml("contents.yml")
+
       set :domain, "habit.getto.systems"
       set :origin, env(
         production:  "https://#{map[:domain]}",
@@ -36,8 +19,8 @@ EMAIL_BODY
       )
       group :image do
         set :auth,           "phoenix",  "0.0.0-pre23"
-        set :datastore,      "diplomat", "0.0.0-pre14", env: credential["gcp"]
-        set :reset_password, "phoenix",  "0.0.0-pre6",  env: credential["smtp"].merge(
+        set :datastore,      "diplomat", "0.0.0-pre14", env: map[:credentials]["gcp"]
+        set :reset_password, "phoenix",  "0.0.0-pre6",  env: map[:credentials]["smtp"].merge(
           LOGIN_URL: "#{map[:origin]}/login/direct.html",
         )
       end
@@ -52,7 +35,7 @@ EMAIL_BODY
       set :origin, map[:origin]
     end
 
-    config = router.build("/getto/habit") do
+    config = router.build do
       namespace :token do
         api :auth do
           [
@@ -71,7 +54,7 @@ EMAIL_BODY
           [
             [:datastore,      "find", kind: "User"],
             [:auth,           "sign", auth: :direct],
-            [:reset_password, "send-email", env: contents["reset-email"]],
+            [:reset_password, "send-email", env: map[:contents]["reset-email"]],
           ]
         end
       end
