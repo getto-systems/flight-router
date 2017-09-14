@@ -17,9 +17,9 @@ module Flight::Router
     end
 
     def draw(&block)
-      dir = File.join(@output_dir,path)
+      dir = File.join(@output_dir,@project)
       FileUtils.mkdir_p(dir)
-      File.write File.join(dir,"routes.json"), JSON.generate(build(path,&block))
+      File.write File.join(dir,"routes.json"), JSON.generate(build(&block))
     end
     def build(&block)
       path = File.join("/", @project)
