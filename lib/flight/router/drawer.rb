@@ -5,7 +5,6 @@ module Flight::Router
     def initialize(project:,output_dir:,input_dir:,env:)
       @project = project
       @output_dir = output_dir
-      @input_dir = input_dir
       @map = Map.new(env: env.to_sym, input_dir: File.join(input_dir,project))
       @app = App.new(@map)
     end
