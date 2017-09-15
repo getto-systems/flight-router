@@ -82,7 +82,7 @@ class Flight::DrawerTest < Minitest::Test
           origin: "http://localhost:12080",
           commands: [
             "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth format-for-auth User",
-            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore find User e30\\=",
+            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore find User e30=",
             "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth sign api.habit.getto.systems"
           ]
         },
@@ -115,7 +115,7 @@ class Flight::DrawerTest < Minitest::Test
         "/getto/habit/token/reset" => {
           origin: "http://localhost:12080",
           commands: [
-            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore find User e30\\=",
+            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore find User e30=",
             "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth sign direct.habit.getto.systems",
             "getto/flight-reset_password-phoenix:0.0.0-pre6 flight_reset_password send-email "
           ]
@@ -131,7 +131,7 @@ class Flight::DrawerTest < Minitest::Test
           },
           commands: [
             "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth password-hash User User",
-            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore modify eyJVc2VyIjp7InJlcGxhY2UiOnsic2FtZWtleSI6ImxvZ2luSUQiLCJjb2xzIjpbImVtYWlsIiwibG9naW5JRCIsInBhc3N3b3JkIl19fX0\\="
+            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore modify eyJVc2VyIjp7InJlcGxhY2UiOnsic2FtZWtleSI6ImxvZ2luSUQiLCJjb2xzIjpbImVtYWlsIiwibG9naW5JRCIsInBhc3N3b3JkIl19fX0="
           ]
         }
       },
