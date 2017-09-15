@@ -1,4 +1,3 @@
-require "shellwords"
 require "json"
 require "base64"
 
@@ -117,7 +116,7 @@ module Flight::Router
           else
             raise "unknown image/key pair: #{image}/#{key}"
           end
-          "#{info[:name]} flight_#{image} #{key} #{Shellwords.join(command_args)}"
+          "#{info[:name]} flight_#{image} #{key} #{command_args.join(" ")}"
         }
       end
 
