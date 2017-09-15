@@ -104,9 +104,10 @@ router.draw("/getto/habit") do
         [:auth, "password-hash", kind: "User"],
         [:datastore, "modify", scope: {
           User: {
-            action: :replace,
-            samekey: "loginID",
-            cols: ["email","loginID","password"],
+            replace: {
+              samekey: "loginID",
+              cols: ["email","loginID","password"],
+            }
           },
         }],
       ]
