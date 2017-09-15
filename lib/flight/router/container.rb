@@ -1,4 +1,6 @@
 require "shellwords"
+require "json"
+require "base64"
 
 module Flight::Router
   class Container
@@ -32,18 +34,13 @@ module Flight::Router
       end
 
       image :datastore do
-        command "find" do |kind:|
-          [kind]
+        command "find" do |kind:,scope:|
+          scope = Base64.strict_encode64(JSON.generate(scope))
+          [kind, scope]
         end
         command "modify" do |scope:|
-          scope.map{|kind,action:,**opts|
-            [kind,action,opts.map{|k,v|
-              if v.respond_to?(:join)
-                v = v.join(",")
-              end
-              "#{k}=#{v}"
-            }].join(":")
-          }
+          scope = Base64.strict_encode64(JSON.generate(scope))
+          [scope]
         end
       end
 

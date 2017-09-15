@@ -79,7 +79,7 @@ router.draw("/getto/habit") do
     api :auth do
       [
         [:auth,      "format-for-auth", kind: "User"],
-        [:datastore, "find", kind: "User"],
+        [:datastore, "find", kind: "User", scope: {}],
         [:auth,      "sign", auth: :api],
       ]
     end
@@ -91,7 +91,7 @@ router.draw("/getto/habit") do
     end
     api :reset do
       [
-        [:datastore,      "find", kind: "User"],
+        [:datastore,      "find", kind: "User", scope: {}],
         [:auth,           "sign", auth: :direct],
         [:reset_password, "send-email", env: contents["reset-email"]],
       ]
@@ -102,14 +102,13 @@ router.draw("/getto/habit") do
     api :update do
       [
         [:auth, "password-hash", kind: "User"],
-        [:datastore, "modify", scope: [
-          [
-            "User",
+        [:datastore, "modify", scope: {
+          User: {
             action: :replace,
             samekey: "loginID",
             cols: ["email","loginID","password"],
-          ],
-        ]],
+          },
+        }],
       ]
     end
   end
