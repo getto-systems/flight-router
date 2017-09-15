@@ -65,9 +65,10 @@ class Flight::DrawerTest < Minitest::Test
             [:auth, "password-hash", kind: "User"],
             [:datastore, "modify", scope: {
               User: {
-                action: :replace,
-                samekey: "loginID",
-                cols: ["email","loginID","password"],
+                replace: {
+                  samekey: "loginID",
+                  cols: ["email","loginID","password"],
+                },
               },
             }],
           ]
@@ -130,7 +131,7 @@ class Flight::DrawerTest < Minitest::Test
           },
           commands: [
             "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth password-hash User User",
-            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore modify eyJVc2VyIjp7ImFjdGlvbiI6InJlcGxhY2UiLCJzYW1la2V5IjoibG9naW5JRCIsImNvbHMiOlsiZW1haWwiLCJsb2dpbklEIiwicGFzc3dvcmQiXX19"
+            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore modify eyJVc2VyIjp7InJlcGxhY2UiOnsic2FtZWtleSI6ImxvZ2luSUQiLCJjb2xzIjpbImVtYWlsIiwibG9naW5JRCIsInBhc3N3b3JkIl19fX0\\="
           ]
         }
       },
