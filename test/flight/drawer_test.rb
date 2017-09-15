@@ -40,7 +40,7 @@ class Flight::DrawerTest < Minitest::Test
         api :auth do
           [
             [:auth,      "format-for-auth", kind: "User"],
-            [:datastore, "find", kind: "User"],
+            [:datastore, "find", kind: "User", scope: {}],
             [:auth,      "sign", auth: :api],
           ]
         end
@@ -52,7 +52,7 @@ class Flight::DrawerTest < Minitest::Test
         end
         api :reset do
           [
-            [:datastore,      "find", kind: "User"],
+            [:datastore,      "find", kind: "User", scope: {}],
             [:auth,           "sign", auth: :direct],
             [:reset_password, "send-email", env: map[:contents]["reset-email"]],
           ]
@@ -63,14 +63,13 @@ class Flight::DrawerTest < Minitest::Test
         api :update do
           [
             [:auth, "password-hash", kind: "User"],
-            [:datastore, "modify", scope: [
-              [
-                "User",
+            [:datastore, "modify", scope: {
+              User: {
                 action: :replace,
                 samekey: "loginID",
                 cols: ["email","loginID","password"],
-              ],
-            ]],
+              },
+            }],
           ]
         end
       end
@@ -82,7 +81,7 @@ class Flight::DrawerTest < Minitest::Test
           origin: "http://localhost:12080",
           commands: [
             "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth format-for-auth User",
-            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore find User",
+            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore find User e30\\=",
             "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth sign api.habit.getto.systems"
           ]
         },
@@ -115,7 +114,7 @@ class Flight::DrawerTest < Minitest::Test
         "/getto/habit/token/reset" => {
           origin: "http://localhost:12080",
           commands: [
-            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore find User",
+            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore find User e30\\=",
             "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth sign direct.habit.getto.systems",
             "getto/flight-reset_password-phoenix:0.0.0-pre6 flight_reset_password send-email "
           ]
@@ -131,7 +130,7 @@ class Flight::DrawerTest < Minitest::Test
           },
           commands: [
             "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth password-hash User User",
-            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore modify User:replace:samekey\\=loginID:cols\\=email,loginID,password"
+            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore modify eyJVc2VyIjp7ImFjdGlvbiI6InJlcGxhY2UiLCJzYW1la2V5IjoibG9naW5JRCIsImNvbHMiOlsiZW1haWwiLCJsb2dpbklEIiwicGFzc3dvcmQiXX19"
           ]
         }
       },
