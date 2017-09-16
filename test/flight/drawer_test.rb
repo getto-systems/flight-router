@@ -75,6 +75,12 @@ class Flight::DrawerTest < Minitest::Test
             }],
           ]
         end
+        api :upload, upload: true do
+          [
+            [:datastore, "format-for-upload", kind: :File],
+            [:datastore, "modify", scope: {File: {insert: {cols: ["name"]}}}],
+          ]
+        end
       end
     end
 
@@ -85,8 +91,8 @@ class Flight::DrawerTest < Minitest::Test
           commands: [
             "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth format-for-auth User",
             "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore find User e30=",
-            "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth sign api.habit.getto.systems"
-          ]
+            "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth sign api.habit.getto.systems",
+          ],
         },
         "/getto/habit/token/direct" => {
           origin: "http://localhost:12080",
@@ -98,8 +104,8 @@ class Flight::DrawerTest < Minitest::Test
             key: "direct.habit.getto.systems",
           },
           commands: [
-            "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth renew api.habit.getto.systems --verify 600"
-          ]
+            "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth renew api.habit.getto.systems --verify 600",
+          ],
         },
         "/getto/habit/token/renew" => {
           origin: "http://localhost:12080",
@@ -111,16 +117,16 @@ class Flight::DrawerTest < Minitest::Test
             key: "api.habit.getto.systems",
           },
           commands: [
-            "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth renew api.habit.getto.systems --verify 1209600"
-          ]
+            "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth renew api.habit.getto.systems --verify 1209600",
+          ],
         },
         "/getto/habit/token/reset" => {
           origin: "http://localhost:12080",
           commands: [
             "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore find User e30=",
             "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth sign direct.habit.getto.systems",
-            "getto/flight-reset_password-phoenix:0.0.0-pre6 flight_reset_password send-email "
-          ]
+            "getto/flight-reset_password-phoenix:0.0.0-pre6 flight_reset_password send-email ",
+          ],
         },
         "/getto/habit/profile/update" => {
           origin: "http://localhost:12080",
@@ -133,9 +139,24 @@ class Flight::DrawerTest < Minitest::Test
           },
           commands: [
             "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth password-hash User User",
-            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore modify eyJVc2VyIjp7InJlcGxhY2UiOnsic2FtZWtleSI6ImxvZ2luSUQiLCJjb2xzIjpbImVtYWlsIiwibG9naW5JRCIsInBhc3N3b3JkIl19fX0="
-          ]
-        }
+            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore modify eyJVc2VyIjp7InJlcGxhY2UiOnsic2FtZWtleSI6ImxvZ2luSUQiLCJjb2xzIjpbImVtYWlsIiwibG9naW5JRCIsInBhc3N3b3JkIl19fX0=",
+          ],
+        },
+        "/getto/habit/profile/upload" => {
+          origin: "http://localhost:12080",
+          auth: {
+            method: "header",
+            expire: 604800,
+            verify: 1209600,
+            image: "getto/flight-auth-phoenix:0.0.0-pre23",
+            key: "api.habit.getto.systems",
+          },
+          upload: true,
+          commands: [
+            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore format-for-upload File",
+            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore modify eyJGaWxlIjp7Imluc2VydCI6eyJjb2xzIjpbIm5hbWUiXX19fQ==",
+          ],
+        },
       },
       config,
       "build"
