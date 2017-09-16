@@ -41,6 +41,9 @@ module Flight::Router
           scope = Base64.strict_encode64(JSON.generate(scope))
           [scope]
         end
+        command "format-for-upload" do |kind:|
+          [kind]
+        end
       end
 
       image :reset_password do
@@ -68,13 +71,13 @@ module Flight::Router
       @config ||= {}
     end
 
-    def namespace(path,auth: nil,&block)
+    def namespace(path,auth: nil,**opts,&block)
       @path << path
 
       _app = @app
       app = {}
-      merge_auth(app,auth)
-      @app = @app.dup.deep_merge(app)
+      merge_auth!(app,auth)
+      @app = @app.dup.deep_merge(app).deep_merge(opts)
 
       _config = config
       @config = {}
@@ -85,19 +88,20 @@ module Flight::Router
       @config = _config.merge(@config)
       @path.pop
     end
-    def api(path,auth: nil,&block)
+    def api(path,auth: nil,**opts,&block)
       path = @path + [path]
       config = {}
-      merge_auth(config,auth)
+      merge_auth!(config,auth)
       commands = parse_command path, instance_exec(&block)
       @config[path.join("/")] = @app
         .deep_merge(config)
+        .deep_merge(opts)
         .deep_merge(commands: commands)
     end
 
     private
 
-      def merge_auth(hash,auth)
+      def merge_auth!(hash,auth)
         if auth
           hash[:auth] = map[:auth][auth]
         end
