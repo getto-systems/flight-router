@@ -77,7 +77,7 @@ class Flight::DrawerTest < Minitest::Test
         end
         api :upload, upload: true do
           [
-            [:datastore, "format-for-upload", kind: :File],
+            [:datastore, "format-for-upload", kind: :File, path: "demo/files"],
             [:datastore, "modify", scope: {File: {insert: {cols: ["name"]}}}],
           ]
         end
@@ -153,7 +153,7 @@ class Flight::DrawerTest < Minitest::Test
           },
           upload: true,
           commands: [
-            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore format-for-upload File",
+            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore format-for-upload File demo/files",
             "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore modify eyJGaWxlIjp7Imluc2VydCI6eyJjb2xzIjpbIm5hbWUiXX19fQ==",
           ],
         },

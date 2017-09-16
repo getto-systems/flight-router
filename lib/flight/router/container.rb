@@ -41,8 +41,8 @@ module Flight::Router
           scope = Base64.strict_encode64(JSON.generate(scope))
           [scope]
         end
-        command "format-for-upload" do |kind:|
-          [kind]
+        command "format-for-upload" do |kind:,path:|
+          [kind, path]
         end
       end
 
