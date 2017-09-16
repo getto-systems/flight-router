@@ -21,6 +21,7 @@ class Flight::DrawerTest < Minitest::Test
         set :auth,           "phoenix",  "0.0.0-pre23"
         set :datastore,      "diplomat", "0.0.0-pre14", env: map[:credentials]["gcp"]
         set :reset_password, "phoenix",  "0.0.0-pre6",  env: map[:credentials]["smtp"]
+        set :aws_s3,         "s3cmd",    "0.0.0-pre10", env: map[:credentials]["s3"]
       end
       group :auth do
         set :direct,   method: "header", expire: 600,    verify: 600
@@ -79,6 +80,7 @@ class Flight::DrawerTest < Minitest::Test
           [
             [:datastore, "format-for-upload", kind: :File, path: "demo/files"],
             [:datastore, "modify", scope: {File: {insert: {cols: ["name"]}}}],
+            [:aws_s3, "copy", bucket: "uploads.#{map[:domain]}"],
           ]
         end
       end
@@ -155,6 +157,7 @@ class Flight::DrawerTest < Minitest::Test
           commands: [
             "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore format-for-upload File demo/files",
             "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore modify eyJGaWxlIjp7Imluc2VydCI6eyJjb2xzIjpbIm5hbWUiXX19fQ==",
+            "getto/flight-aws_s3-s3cmd:0.0.0-pre10 flight_aws_s3 copy uploads.habit.getto.systems",
           ],
         },
       },

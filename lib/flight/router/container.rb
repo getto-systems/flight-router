@@ -51,6 +51,12 @@ module Flight::Router
           []
         end
       end
+
+      image :aws_s3 do
+        command "copy" do |bucket:|
+          [bucket]
+        end
+      end
     end
 
     using HashEx
