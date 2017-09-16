@@ -1,6 +1,7 @@
 reset-email:
-  EMAIL_FROM: EMAIL-FROM
-  EMAIL_SUBJECT: EMAIL-SUBJECT
-  EMAIL_BODY: |
-    EMAIL
-    BODY
+  EMAIL:
+    from: EMAIL-FROM
+    subject: EMAIL-SUBJECT
+    body: |
+      EMAIL
+      BODY

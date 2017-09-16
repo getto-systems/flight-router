@@ -20,9 +20,7 @@ class Flight::DrawerTest < Minitest::Test
       group :image do
         set :auth,           "phoenix",  "0.0.0-pre23"
         set :datastore,      "diplomat", "0.0.0-pre14", env: map[:credentials]["gcp"]
-        set :reset_password, "phoenix",  "0.0.0-pre6",  env: map[:credentials]["smtp"].merge(
-          LOGIN_URL: "#{map[:origin]}/login/direct.html",
-        )
+        set :reset_password, "phoenix",  "0.0.0-pre6",  env: map[:credentials]["smtp"]
       end
       group :auth do
         set :direct,   method: "header", expire: 600,    verify: 600
@@ -54,7 +52,11 @@ class Flight::DrawerTest < Minitest::Test
           [
             [:datastore,      "find", kind: "User", scope: {}],
             [:auth,           "sign", auth: :direct],
-            [:reset_password, "send-email", env: map[:contents]["reset-email"]],
+            [:reset_password, "send-email", env: map[:contents]["reset-email"].tap{|email|
+              email["EMAIL"].merge!(
+                login_url: "#{map[:origin]}/login/direct.html",
+              )
+            }],
           ]
         end
       end
@@ -140,13 +142,7 @@ class Flight::DrawerTest < Minitest::Test
     )
 
     assert_equal 'GCP_CREDENTIALS_JSON="JSON"', File.read(File.expand_path("../routes/getto/habit/token/auth/2.env",__FILE__)), "env"
-    assert_equal 'SMTP_SERVER=SMTP-SERVER
-SMTP_PORT=SMTP-PORT
-SMTP_USER=SMTP-USER
-SMTP_PASSWORD=SMTP-PASSWORD
-LOGIN_URL=http://localhost:12080/login/direct.html
-EMAIL_FROM=EMAIL-FROM
-EMAIL_SUBJECT=EMAIL-SUBJECT
-EMAIL_BODY=EMAIL\\nBODY\\n', File.read(File.expand_path("../routes/getto/habit/token/reset/3.env",__FILE__)), "env"
+    assert_equal 'SMTP={"server":"SMTP-SERVER","port":"SMTP-PORT","user":"SMTP-USER","password":"SMTP-PASSWORD"}
+EMAIL={"from":"EMAIL-FROM","subject":"EMAIL-SUBJECT","body":"EMAIL\\nBODY\\n","login_url":"http://localhost:12080/login/direct.html"}', File.read(File.expand_path("../routes/getto/habit/token/reset/3.env",__FILE__)), "env"
   end
 end
