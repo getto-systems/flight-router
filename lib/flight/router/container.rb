@@ -124,7 +124,13 @@ module Flight::Router
         dir = File.join(@output_dir.to_s,path.map(&:to_s))
         FileUtils.mkdir_p(dir)
         File.write(File.join(dir,file),env.map{|k,v|
-          "#{k}=#{v.gsub("\n",'\n')}"
+          v = case v
+          when String
+            v
+          else
+            JSON.generate(v)
+          end
+          "#{k}=#{v}"
         }.join("\n"))
       end
   end
