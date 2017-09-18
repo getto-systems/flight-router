@@ -92,7 +92,7 @@ class Flight::DrawerTest < Minitest::Test
         "/getto/habit/token/auth" => {
           origin: "http://localhost:12080",
           commands: [
-            {image: "getto/flight-auth-phoenix:0.0.0-pre23", command: ["flight_auth","format-for-auth",JSON.generate(kind: "User")]},
+            {image: "getto/flight-auth-phoenix:0.0.0-pre23", command: ["flight_auth","format-for-auth",JSON.generate(salt: "User")]},
             {image: "getto/flight-datastore-diplomat:0.0.0-pre14", command: ["flight_datastore","find",JSON.generate(kind: "User", scope: {})]},
             {image: "getto/flight-auth-phoenix:0.0.0-pre23", command: ["flight_auth","sign",JSON.generate(key: "api.habit.getto.systems")]},
           ],
