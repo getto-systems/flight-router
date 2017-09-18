@@ -1,4 +1,5 @@
 require "test_helper"
+require "json"
 
 class Flight::DrawerTest < Minitest::Test
   def test_draw
@@ -91,9 +92,9 @@ class Flight::DrawerTest < Minitest::Test
         "/getto/habit/token/auth" => {
           origin: "http://localhost:12080",
           commands: [
-            "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth format-for-auth User",
-            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore find User e30=",
-            "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth sign api.habit.getto.systems",
+            {image: "getto/flight-auth-phoenix:0.0.0-pre23", command: ["flight_auth","format-for-auth",JSON.generate(kind: "User")]},
+            {image: "getto/flight-datastore-diplomat:0.0.0-pre14", command: ["flight_datastore","find",JSON.generate(kind: "User", scope: {})]},
+            {image: "getto/flight-auth-phoenix:0.0.0-pre23", command: ["flight_auth","sign",JSON.generate(key: "api.habit.getto.systems")]},
           ],
         },
         "/getto/habit/token/direct" => {
@@ -106,7 +107,7 @@ class Flight::DrawerTest < Minitest::Test
             key: "direct.habit.getto.systems",
           },
           commands: [
-            "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth renew api.habit.getto.systems --verify 600",
+            {image: "getto/flight-auth-phoenix:0.0.0-pre23", command: ["flight_auth","renew",JSON.generate(key: "api.habit.getto.systems",verify: 600)]},
           ],
         },
         "/getto/habit/token/renew" => {
@@ -119,15 +120,15 @@ class Flight::DrawerTest < Minitest::Test
             key: "api.habit.getto.systems",
           },
           commands: [
-            "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth renew api.habit.getto.systems --verify 1209600",
+            {image: "getto/flight-auth-phoenix:0.0.0-pre23", command: ["flight_auth","renew",JSON.generate(key: "api.habit.getto.systems",verify: 1209600)]},
           ],
         },
         "/getto/habit/token/reset" => {
           origin: "http://localhost:12080",
           commands: [
-            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore find User e30=",
-            "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth sign direct.habit.getto.systems",
-            "getto/flight-reset_password-phoenix:0.0.0-pre6 flight_reset_password send-email ",
+            {image: "getto/flight-datastore-diplomat:0.0.0-pre14", command: ["flight_datastore","find",JSON.generate(kind: "User", scope: {})]},
+            {image: "getto/flight-auth-phoenix:0.0.0-pre23", command: ["flight_auth","sign",JSON.generate(key: "direct.habit.getto.systems")]},
+            {image: "getto/flight-reset_password-phoenix:0.0.0-pre6", command: ["flight_reset_password","send-email",JSON.generate({})]},
           ],
         },
         "/getto/habit/profile/update" => {
@@ -140,8 +141,15 @@ class Flight::DrawerTest < Minitest::Test
             key: "api.habit.getto.systems",
           },
           commands: [
-            "getto/flight-auth-phoenix:0.0.0-pre23 flight_auth password-hash User User",
-            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore modify eyJVc2VyIjp7InJlcGxhY2UiOnsic2FtZWtleSI6ImxvZ2luSUQiLCJjb2xzIjpbImVtYWlsIiwibG9naW5JRCIsInBhc3N3b3JkIl19fX0=",
+            {image: "getto/flight-auth-phoenix:0.0.0-pre23", command: ["flight_auth","password-hash",JSON.generate(kind: "User",salt: "User")]},
+            {image: "getto/flight-datastore-diplomat:0.0.0-pre14", command: ["flight_datastore","modify",JSON.generate(scope: {
+              User: {
+                replace: {
+                  samekey: "loginID",
+                  cols: ["email","loginID","password"],
+                },
+              },
+            })]},
           ],
         },
         "/getto/habit/profile/upload" => {
@@ -155,9 +163,9 @@ class Flight::DrawerTest < Minitest::Test
           },
           upload: true,
           commands: [
-            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore format-for-upload File demo/files",
-            "getto/flight-datastore-diplomat:0.0.0-pre14 flight_datastore modify eyJGaWxlIjp7Imluc2VydCI6eyJjb2xzIjpbIm5hbWUiXX19fQ==",
-            "getto/flight-aws_s3-s3cmd:0.0.0-pre10 flight_aws_s3 copy uploads.habit.getto.systems",
+            {image: "getto/flight-datastore-diplomat:0.0.0-pre14", command: ["flight_datastore","format-for-upload",JSON.generate(kind: "File",path: "demo/files")]},
+            {image: "getto/flight-datastore-diplomat:0.0.0-pre14", command: ["flight_datastore","modify",JSON.generate(scope: {File: {insert: {cols: ["name"]}}})]},
+            {image: "getto/flight-aws_s3-s3cmd:0.0.0-pre10", command: ["flight_aws_s3","copy",JSON.generate(bucket: "uploads.habit.getto.systems")]},
           ],
         },
       },

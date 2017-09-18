@@ -18,43 +18,14 @@ module Flight::Router
       end
 
       image :auth do
-        command "format-for-auth" do |kind:|
-          [kind]
-        end
         command "password-hash" do |kind:|
-          [kind, kind]
+          {kind: kind, salt: kind}
         end
         command "sign" do |auth:|
-          [map[:auth][auth][:key]]
+          {key: map[:auth][auth][:key]}
         end
         command "renew" do |auth:,verify:|
-          [map[:auth][auth][:key], "--verify", map[:auth][verify][:verify]]
-        end
-      end
-
-      image :datastore do
-        command "find" do |kind:,scope:|
-          scope = Base64.strict_encode64(JSON.generate(scope))
-          [kind, scope]
-        end
-        command "modify" do |scope:|
-          scope = Base64.strict_encode64(JSON.generate(scope))
-          [scope]
-        end
-        command "format-for-upload" do |kind:,path:|
-          [kind, path]
-        end
-      end
-
-      image :reset_password do
-        command "send-email" do
-          []
-        end
-      end
-
-      image :aws_s3 do
-        command "copy" do |bucket:|
-          [bucket]
+          {key: map[:auth][auth][:key], verify: map[:auth][verify][:verify]}
         end
       end
     end
@@ -118,15 +89,16 @@ module Flight::Router
           unless info = map[:image][image]
             raise "image not defined: [#{image}]"
           end
-          if opts[:env] || info[:env]
-            puts_env(path, "#{i}.env", (info[:env] || {}).merge(opts[:env] || {}))
+          env = opts.delete(:env)
+          if env || info[:env]
+            puts_env(path, "#{i}.env", (info[:env] || {}).merge(env || {}))
           end
-          if block = @builder[image][key]
+          if block = @builder[image] && @builder[image][key]
             command_args = instance_exec(**opts,&block)
           else
-            raise "unknown image/key pair: #{image}/#{key}"
+            command_args = opts
           end
-          "#{info[:name]} flight_#{image} #{key} #{command_args.join(" ")}"
+          {image: info[:name], command: ["flight_#{image}",key,JSON.generate(command_args)]}
         }
       end
 
