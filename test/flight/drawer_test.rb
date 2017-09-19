@@ -77,7 +77,7 @@ class Flight::DrawerTest < Minitest::Test
             }],
           ]
         end
-        api :upload, upload: true do
+        api :upload, upload: {path: "uploads"} do
           [
             [:datastore, "format-for-upload", kind: :File, path: "demo/files"],
             [:datastore, "modify", scope: {File: {insert: {cols: ["name"]}}}],
@@ -161,11 +161,13 @@ class Flight::DrawerTest < Minitest::Test
             image: "getto/flight-auth-phoenix:0.0.0-pre23",
             key: "api.habit.getto.systems",
           },
-          upload: true,
+          upload: {
+            path: "uploads",
+          },
           commands: [
             {image: "getto/flight-datastore-diplomat:0.0.0-pre14", command: ["flight_datastore","format-for-upload",JSON.generate(kind: "File",path: "demo/files")]},
             {image: "getto/flight-datastore-diplomat:0.0.0-pre14", command: ["flight_datastore","modify",JSON.generate(scope: {File: {insert: {cols: ["name"]}}})]},
-            {image: "getto/flight-aws_s3-s3cmd:0.0.0-pre10", command: ["flight_aws_s3","copy",JSON.generate(bucket: "uploads.habit.getto.systems")]},
+            {image: "getto/flight-aws_s3-s3cmd:0.0.0-pre10", command: ["flight_aws_s3","copy",JSON.generate(bucket: "uploads.habit.getto.systems", path: "uploads")]},
           ],
         },
       },
