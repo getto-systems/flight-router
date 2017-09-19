@@ -32,7 +32,11 @@ module Flight::Router
     private
 
       def value(key,args,opts)
-        args.first
+        if args.length > 0
+          args.first
+        else
+          opts
+        end
       end
   end
 end

@@ -31,14 +31,6 @@ module Flight::Router
           {key: map[:auth][auth][:key], verify: map[:auth][verify][:verify]}
         end
       end
-
-      image :aws_s3 do
-        command "copy" do |**opts|
-          opts.merge(
-            path: app[:upload][:path],
-          )
-        end
-      end
     end
 
     using HashEx
