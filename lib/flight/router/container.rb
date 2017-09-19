@@ -31,6 +31,14 @@ module Flight::Router
           {key: map[:auth][auth][:key], verify: map[:auth][verify][:verify]}
         end
       end
+
+      image :aws_s3 do
+        command "copy" do |**opts|
+          opts.merge(
+            path: app[:upload][:path],
+          )
+        end
+      end
     end
 
     using HashEx
@@ -45,6 +53,9 @@ module Flight::Router
 
     def map
       @map
+    end
+    def app
+      @app
     end
 
     def config
@@ -72,11 +83,14 @@ module Flight::Router
       path = @path + [path]
       config = {}
       merge_auth!(config,auth)
-      commands = parse_command path, instance_exec(&block)
-      @config[path.join("/")] = @app
-        .deep_merge(config)
-        .deep_merge(opts)
-        .deep_merge(commands: commands)
+
+      _app = @app
+      @app = @app.deep_merge(config).deep_merge(opts)
+      commands = parse_command(path, instance_exec(&block))
+
+      @config[path.join("/")] = @app.deep_merge(commands: commands)
+
+      @app = _app
     end
 
     private
