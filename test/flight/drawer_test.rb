@@ -18,6 +18,8 @@ class Flight::DrawerTest < Minitest::Test
         production:  "https://#{map[:domain]}",
         development: "http://localhost:12080",
       )
+      set :upload, path: "uploads"
+
       group :image do
         set :auth,           "phoenix",  "0.0.0-pre23"
         set :datastore,      "diplomat", "0.0.0-pre14", env: map[:credentials]["gcp"]
@@ -77,11 +79,11 @@ class Flight::DrawerTest < Minitest::Test
             }],
           ]
         end
-        api :upload, upload: {path: "uploads"} do
+        api :upload, upload: map[:upload] do
           [
             [:datastore, "format-for-upload", kind: :File, path: "demo/files"],
             [:datastore, "modify", scope: {File: {insert: {cols: ["name"]}}}],
-            [:aws_s3, "copy", bucket: "uploads.#{map[:domain]}"],
+            [:aws_s3, "copy", bucket: "uploads.#{map[:domain]}", path: map[:upload][:path]],
           ]
         end
       end
