@@ -49,6 +49,13 @@ module Flight::Router
     def app
       @app
     end
+    def cmd(image,command,**opts)
+      @cmd.push(
+        image: image,
+        command: command,
+        opts: opts,
+      )
+    end
 
     def config
       @config ||= {}
@@ -78,9 +85,10 @@ module Flight::Router
 
       _app = @app
       @app = @app.deep_merge(config).deep_merge(opts)
-      commands = parse_command(path, instance_exec(&block))
+      @cmd = []
+      instance_exec(&block)
 
-      @config[path.join("/")] = @app.deep_merge(commands: commands)
+      @config[path.join("/")] = @app.deep_merge(commands: parse_command(path, @cmd))
 
       @app = _app
     end
@@ -94,7 +102,11 @@ module Flight::Router
       end
 
       def parse_command(path,commands)
-        commands.each.with_index(1).map{|(image,key,opts),i|
+        commands.each.with_index(1).map{|cmd,i|
+          image = cmd[:image]
+          command = cmd[:command]
+          opts = cmd[:opts]
+
           unless info = map[:image][image]
             raise "image not defined: [#{image}]"
           end
@@ -102,12 +114,13 @@ module Flight::Router
           if env || info[:env]
             puts_env(path, "#{i}.env", (info[:env] || {}).merge(env || {}))
           end
-          if block = @builder[image] && @builder[image][key]
+          if block = @builder[image] && @builder[image][command]
             command_args = instance_exec(**opts,&block)
           else
             command_args = opts
           end
-          {image: info[:name], command: ["flight_#{image}",key,JSON.generate(command_args)]}
+
+          {image: info[:name], command: ["flight_#{image}",command,JSON.generate(command_args)]}
         }
       end
 
