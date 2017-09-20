@@ -5,3 +5,7 @@ reset-email:
     body: |
       EMAIL
       BODY
+excel:
+  header:
+    column1: カラム1
+    column2: カラム2

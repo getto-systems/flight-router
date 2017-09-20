@@ -14,17 +14,20 @@ class Flight::DrawerTest < Minitest::Test
       set :contents, load_yaml("contents.yml")
 
       set :domain, "habit.getto.systems"
+      set :bucket, {
+        upload: "uploads.#{map[:domain]}"
+      }
       set :origin, env(
         production:  "https://#{map[:domain]}",
         development: "http://localhost:12080",
       )
-      set :upload, path: "uploads"
 
       group :image do
         set :auth,           "phoenix",  "0.0.0-pre23"
         set :datastore,      "diplomat", "0.0.0-pre14", env: map[:credentials]["gcp"]
         set :reset_password, "phoenix",  "0.0.0-pre6",  env: map[:credentials]["smtp"]
         set :aws_s3,         "s3cmd",    "0.0.0-pre10", env: map[:credentials]["s3"]
+        set :excel,          "roo",      "0.0.0-pre0"
       end
       group :auth do
         set :direct,   method: "header", expire: 600,    verify: 600
@@ -40,51 +43,52 @@ class Flight::DrawerTest < Minitest::Test
     config = router.build do
       namespace :token do
         api :auth do
-          [
-            [:auth,      "format-for-auth", kind: "User"],
-            [:datastore, "find", kind: "User", scope: {}],
-            [:auth,      "sign", auth: :api],
-          ]
+          cmd :auth,      "format-for-auth", kind: "User"
+          cmd :datastore, "find", kind: "User", scope: {}
+          cmd :auth,      "sign", auth: :api
         end
         api :direct, auth: :direct do
-          [ [:auth, "renew", auth: :api, verify: :direct] ]
+          cmd :auth, "renew", auth: :api, verify: :direct
         end
         api :renew, auth: :api do
-          [ [:auth, "renew", auth: :api, verify: :api] ]
+          cmd :auth, "renew", auth: :api, verify: :api
         end
         api :reset do
-          [
-            [:datastore,      "find", kind: "User", scope: {}],
-            [:auth,           "sign", auth: :direct],
-            [:reset_password, "send-email", env: map[:contents]["reset-email"].tap{|email|
-              email["EMAIL"].merge!(
-                login_url: "#{map[:origin]}/login/direct.html",
-              )
-            }],
-          ]
+          cmd :datastore,      "find", kind: "User", scope: {}
+          cmd :auth,           "sign", auth: :direct
+          cmd :reset_password, "send-email", env: map[:contents]["reset-email"].tap{|email|
+            email["EMAIL"].merge!(
+              login_url: "#{map[:origin]}/login/direct.html",
+            )
+          }
         end
       end
 
       namespace :profile, auth: :api do
         api :update do
-          [
-            [:auth, "password-hash", kind: "User"],
-            [:datastore, "modify", scope: {
-              User: {
-                replace: {
-                  samekey: "loginID",
-                  cols: ["email","loginID","password"],
-                },
+          cmd :auth, "password-hash", kind: "User"
+          cmd :datastore, "modify", scope: {
+            User: {
+              replace: {
+                samekey: "loginID",
+                cols: ["email","loginID","password"],
               },
-            }],
-          ]
+            },
+          }
         end
-        api :upload, upload: map[:upload] do
-          [
-            [:datastore, "format-for-upload", kind: :File, path: "demo/files"],
-            [:datastore, "modify", scope: {File: {insert: {cols: ["name"]}}}],
-            [:aws_s3, "copy", bucket: "uploads.#{map[:domain]}", path: map[:upload][:path]],
+        api :upload, upload: {kind: "File", dest: :upload, bucket: map[:bucket][:upload]} do
+          header = map[:contents]["excel"]["header"]
+          fill = [
+            #{kind: "Supplier", column: "supplier_code", cols: [:name]},
           ]
+
+          cmd :datastore, "upload"
+
+          cmd :excel, "read",            src: :upload, dest: :raw,  sheet: "Sheet1", header: header
+          cmd :datastore, "bulk-insert", src: :raw,    dest: :data, keys: [:catalog_number], fill: fill
+          #cmd :bigquery, "load",         src: :data
+
+          cmd :aws_s3, "copy", path: [:original,:raw,:data]
         end
       end
     end
@@ -164,12 +168,15 @@ class Flight::DrawerTest < Minitest::Test
             key: "api.habit.getto.systems",
           },
           upload: {
-            path: "uploads",
+            kind: "File",
+            dest: :upload,
+            bucket: "uploads.habit.getto.systems",
           },
           commands: [
-            {image: "getto/flight-datastore-diplomat:0.0.0-pre14", command: ["flight_datastore","format-for-upload",JSON.generate(kind: "File",path: "demo/files")]},
-            {image: "getto/flight-datastore-diplomat:0.0.0-pre14", command: ["flight_datastore","modify",JSON.generate(scope: {File: {insert: {cols: ["name"]}}})]},
-            {image: "getto/flight-aws_s3-s3cmd:0.0.0-pre10", command: ["flight_aws_s3","copy",JSON.generate(bucket: "uploads.habit.getto.systems", path: "uploads")]},
+            {image: "getto/flight-datastore-diplomat:0.0.0-pre14", command: ["flight_datastore","upload",JSON.generate({})]},
+            {image: "getto/flight-excel-roo:0.0.0-pre0", command: ["flight_excel","read",JSON.generate(src: :upload,dest: :raw, sheet: "Sheet1", header: {"column1" => "カラム1", "column2" => "カラム2"})]},
+            {image: "getto/flight-datastore-diplomat:0.0.0-pre14", command: ["flight_datastore","bulk-insert",JSON.generate(src: :raw, dest: :data, keys: [:catalog_number], fill: [])]},
+            {image: "getto/flight-aws_s3-s3cmd:0.0.0-pre10", command: ["flight_aws_s3","copy",JSON.generate(path: [:original,:raw,:data])]},
           ],
         },
       },
