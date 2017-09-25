@@ -19,7 +19,7 @@ module Flight::Router
 
       image :auth do
         command "format-for-auth" do |kind:|
-          {salt: kind}
+          {kind: kind, salt: kind}
         end
         command "password-hash" do |kind:|
           {kind: kind, salt: kind}
