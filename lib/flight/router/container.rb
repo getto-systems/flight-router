@@ -18,11 +18,11 @@ module Flight::Router
       end
 
       image :auth do
-        command "format-for-auth" do |kind:|
-          {kind: kind, salt: kind}
+        command "format-for-auth" do |kind:,**opts|
+          opts.merge(salt: kind)
         end
-        command "password-hash" do |kind:|
-          {kind: kind, salt: kind}
+        command "password-hash" do |kind:,**opts|
+          opts.merge(kind: kind, salt: kind)
         end
         command "sign" do |auth:|
           {key: map[:auth][auth][:key]}
