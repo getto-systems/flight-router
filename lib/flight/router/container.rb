@@ -24,11 +24,11 @@ module Flight::Router
         command "password-hash" do |kind:,**opts|
           opts.merge(kind: kind, salt: kind)
         end
-        command "sign" do |auth:|
-          {key: map[:auth][auth][:key]}
+        command "sign" do |auth:,**opts|
+          opts.merge(key: map[:auth][auth][:key])
         end
-        command "renew" do |auth:,verify:|
-          {key: map[:auth][auth][:key], verify: map[:auth][verify][:verify]}
+        command "renew" do |auth:,verify:,**opts|
+          opts.merge(key: map[:auth][auth][:key], verify: map[:auth][verify][:verify])
         end
       end
     end

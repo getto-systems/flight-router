@@ -22,6 +22,8 @@ class Flight::DrawerTest < Minitest::Test
         development: "http://localhost:12080",
       )
 
+      set :auth_cols, ["loginID","role"]
+
       group :image do
         set :auth,           "phoenix",  "0.0.0-pre23"
         set :datastore,      "diplomat", "0.0.0-pre14", env: map[:credentials]["gcp"]
@@ -45,17 +47,17 @@ class Flight::DrawerTest < Minitest::Test
         api :auth do
           cmd :auth,      "format-for-auth", namespace: "Namespace", kind: "User"
           cmd :datastore, "find", kind: "User", scope: {}
-          cmd :auth,      "sign", auth: :api
+          cmd :auth,      "sign", auth: :api, require_cols: map[:auth_cols]
         end
         api :direct, auth: :direct do
-          cmd :auth, "renew", auth: :api, verify: :direct
+          cmd :auth, "renew", auth: :api, verify: :direct, require_cols: map[:auth_cols]
         end
         api :renew, auth: :api do
-          cmd :auth, "renew", auth: :api, verify: :api
+          cmd :auth, "renew", auth: :api, verify: :api, require_cols: map[:auth_cols]
         end
         api :reset do
           cmd :datastore,      "find", kind: "User", scope: {}
-          cmd :auth,           "sign", auth: :direct
+          cmd :auth,           "sign", auth: :direct, require_cols: map[:auth_cols]
           cmd :reset_password, "send-email", env: map[:contents]["reset-email"].tap{|email|
             email["EMAIL"].merge!(
               login_url: "#{map[:origin]}/login/direct.html",
@@ -100,7 +102,7 @@ class Flight::DrawerTest < Minitest::Test
           commands: [
             {image: "getto/flight-auth-phoenix:0.0.0-pre23", command: ["flight_auth","format-for-auth",JSON.generate(namespace: "Namespace", salt: "User")]},
             {image: "getto/flight-datastore-diplomat:0.0.0-pre14", command: ["flight_datastore","find",JSON.generate(kind: "User", scope: {})]},
-            {image: "getto/flight-auth-phoenix:0.0.0-pre23", command: ["flight_auth","sign",JSON.generate(key: "api.habit.getto.systems")]},
+            {image: "getto/flight-auth-phoenix:0.0.0-pre23", command: ["flight_auth","sign",JSON.generate(require_cols: ["loginID","role"],key: "api.habit.getto.systems")]},
           ],
         },
         "/getto/habit/token/direct" => {
@@ -113,7 +115,7 @@ class Flight::DrawerTest < Minitest::Test
             key: "direct.habit.getto.systems",
           },
           commands: [
-            {image: "getto/flight-auth-phoenix:0.0.0-pre23", command: ["flight_auth","renew",JSON.generate(key: "api.habit.getto.systems",verify: 600)]},
+            {image: "getto/flight-auth-phoenix:0.0.0-pre23", command: ["flight_auth","renew",JSON.generate(require_cols: ["loginID","role"],key: "api.habit.getto.systems",verify: 600)]},
           ],
         },
         "/getto/habit/token/renew" => {
@@ -126,14 +128,14 @@ class Flight::DrawerTest < Minitest::Test
             key: "api.habit.getto.systems",
           },
           commands: [
-            {image: "getto/flight-auth-phoenix:0.0.0-pre23", command: ["flight_auth","renew",JSON.generate(key: "api.habit.getto.systems",verify: 1209600)]},
+            {image: "getto/flight-auth-phoenix:0.0.0-pre23", command: ["flight_auth","renew",JSON.generate(require_cols: ["loginID","role"],key: "api.habit.getto.systems",verify: 1209600)]},
           ],
         },
         "/getto/habit/token/reset" => {
           origin: "http://localhost:12080",
           commands: [
             {image: "getto/flight-datastore-diplomat:0.0.0-pre14", command: ["flight_datastore","find",JSON.generate(kind: "User", scope: {})]},
-            {image: "getto/flight-auth-phoenix:0.0.0-pre23", command: ["flight_auth","sign",JSON.generate(key: "direct.habit.getto.systems")]},
+            {image: "getto/flight-auth-phoenix:0.0.0-pre23", command: ["flight_auth","sign",JSON.generate(require_cols: ["loginID","role"],key: "direct.habit.getto.systems")]},
             {image: "getto/flight-reset_password-phoenix:0.0.0-pre6", command: ["flight_reset_password","send-email",JSON.generate({})]},
           ],
         },
